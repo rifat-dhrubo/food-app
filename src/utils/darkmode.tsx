@@ -1,6 +1,10 @@
 import * as React from "react";
 
 export function getInitialColorMode(): "dark" | "light" {
+  // SSR default
+  if (typeof window === "undefined") {
+    return "light";
+  }
   const persistedColorPreference = window.localStorage.getItem("color-mode") as
     | "dark"
     | "light";
@@ -18,16 +22,16 @@ export function getInitialColorMode(): "dark" | "light" {
     return mql.matches ? "dark" : "light";
   }
   // If they are using a browser/OS that doesn't support
-  // color themes, let's default to 'dark'.
-  return "dark";
+  // color themes, let's default to 'light'.
+  return "light";
 }
 
-type Props = {
+type ThemeProps = {
   colorMode: "dark" | "light";
   setColorMode: (value: "dark" | "light") => void;
 };
 
-export const ThemeContext = React.createContext<Props>({
+const ThemeContext = React.createContext<ThemeProps>({
   colorMode: "dark",
   setColorMode: () => null,
 });
@@ -36,13 +40,36 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [colorMode, rawSetColorMode] = React.useState(getInitialColorMode);
 
   const setColorMode = (value: "dark" | "light") => {
-    rawSetColorMode(value);
     // Persist it on update
-    window.localStorage.setItem("color-mode", value);
+    localStorage.setItem("color-mode", value);
+    console.log(localStorage.getItem("color-mode"));
+
+    rawSetColorMode(value);
   };
+  React.useEffect(
+    function addDarkModeClass() {
+      if (typeof window === "undefined") return;
+      const root = document.body.classList;
+      if (colorMode === "dark") {
+        root.remove("dark");
+      } else {
+        root.add("dark");
+      }
+    },
+    [colorMode]
+  );
   return (
     <ThemeContext.Provider value={{ colorMode, setColorMode }}>
       {children}
     </ThemeContext.Provider>
   );
+};
+
+export const useTheme = () => {
+  const context = React.useContext(ThemeContext);
+  if (!context) {
+    throw new Error("Must be within theme context tree");
+  }
+
+  return context;
 };
