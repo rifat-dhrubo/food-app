@@ -32,7 +32,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <ThemeProvider>
       <div
-        className={`h-full min-h-screen bg-gray-100 dark:bg-neutral-900 ${nunito.variable} font-sans text-slate-900 dark:text-slate-100`}
+        className={`h-full min-h-screen bg-zinc-50 dark:bg-neutral-900 ${nunito.variable} font-sans text-zinc-800 dark:text-zinc-100`}
       >
         <style jsx global>{`
           *,
